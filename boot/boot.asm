@@ -1,6 +1,7 @@
 org 0
 bits 16
 
+jmp 0x7c0:start
 
 start:
     cli ; clear interrupts
