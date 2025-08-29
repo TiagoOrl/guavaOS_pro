@@ -1,15 +1,18 @@
-org 0x7c00
+org 0
 bits 16
 
 
 start:
-    ; reset register values
-    mov ax, 0
+    cli ; clear interrupts
+    mov ax, 0x7c0
     mov ds, ax
     mov es, ax
-    mov ss, ax
-
+    mov ax, 0x00
+    mov ss, ax ; set stack segment to 0
     mov sp, 0x7C00 ; moves the stack pointer to the start of the program OS
+
+    sti ; enables interrupts
+    
     
     call print_msg
     jmp $
