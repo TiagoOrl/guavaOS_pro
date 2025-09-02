@@ -9,4 +9,4 @@ loader.bin: ./boot/boot.asm
 
 
 cl:
-	rm -r ./build/* loader.bin
+	rm -r ./build/* *.bin

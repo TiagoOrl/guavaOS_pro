@@ -8,7 +8,7 @@ _start:
     jmp short start
     nop
 
-times 33 db 0
+ times 33 db 0
 
 start:
     jmp 0:step2
@@ -20,7 +20,7 @@ step2:
     mov ds, ax
     mov es, ax
     mov ss, ax ; set stack segment to 0
-    mov sp, 0x7C00 ; moves the stack pointer to the start of the program OS
+    mov sp, 0x7c00 ; moves the stack pointer to the start of the program OS
 
     sti ; enables interrupts
 
@@ -38,12 +38,11 @@ step2:
     mov eax, cr0
     or eax, 0x1
     mov cr0, eax
+    jmp CODE_SEG:load32
 
 
-
+;GDT
 gdt_start:
-
-
 gdt_null:
     ; fill 64 bits with zeroes
     dd 0x0
@@ -123,20 +122,26 @@ print_msg:
 
 msg: db 'Welcome to Guava OS v0.0.1', 0x0D, 0x0A, 0x0D, 0x0A, 0
 err_read_msg: db 'Failed to load sector from disk', 0x0D, 0x0A, 0
-times 510-($ - $$) db 0
-dw 0xAA55
-
 buffer:
 
-[BITS 32]
 
+
+
+[BITS 32]
 load32:
+    mov ax, DATA_SEG
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov ebp, 0x00200000
+    mov esp, ebp
     jmp $
 
 
-
-
-
+times 510-($ - $$) db 0
+dw 0xAA55
 
 
 
