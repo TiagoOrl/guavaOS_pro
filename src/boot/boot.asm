@@ -27,19 +27,14 @@ step2:
     mov si, msg
     call print_msg
 
-;     call read_sector
-;
-;     mov si, buffer
-;     call print_msg
-
 .load_protected:
     cli
     lgdt[gdt_descriptor]
     mov eax, cr0
     or eax, 0x1
     mov cr0, eax
-    jmp CODE_SEG:load32
-
+    ; jmp CODE_SEG:load32
+    jmp $
 
 ;GDT
 gdt_start:
@@ -125,19 +120,6 @@ err_read_msg: db 'Failed to load sector from disk', 0x0D, 0x0A, 0
 buffer:
 
 
-
-
-[BITS 32]
-load32:
-    mov ax, DATA_SEG
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov ebp, 0x00200000
-    mov esp, ebp
-    jmp $
 
 
 times 510-($ - $$) db 0
