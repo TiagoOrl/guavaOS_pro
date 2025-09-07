@@ -33,8 +33,8 @@ step2:
     mov eax, cr0
     or eax, 0x1
     mov cr0, eax
-    ; jmp CODE_SEG:load32
-    jmp $
+    jmp CODE_SEG:load32
+    
 
 ;GDT
 gdt_start:
@@ -67,6 +67,8 @@ gdt_end:
 gdt_descriptor:
     dw gdt_end - gdt_start - 1
     dd gdt_start
+
+
 
 
 ; AH = 02h
@@ -121,6 +123,79 @@ buffer:
 
 
 
+
+[BITS 32]
+load32:
+    mov eax, 1  ; load from sector 1
+    mov ecx, 100    ; number of sectors to load = 1
+    mov edi, 0x0100000  ; the address we want to load the kernel into
+    call ata_lba_read
+    jmp CODE_SEG:0x0100000
+
+
+ata_lba_read:
+    mov ebx, eax ; backup the LBA
+    ; send the highest 8 bits of the lba to the hard disk
+    shr eax, 24
+    or eax, 0xE0    ; selects the master drive
+    mov dx, 0x1f6   ; port to write bits to
+    out dx, al
+    ; fininshed sending the highest 8 bits of the lba
+
+    ; send the total sectors to read
+    mov eax, ecx
+    mov dx, 0x1f2
+    out dx, al
+
+
+    ; send more bits of the LBA
+    mov eax, ebx ; restore the backup LBA
+    mov dx, 0x1f3
+    out dx, al
+    ; end
+
+    ; send more bits of the LBA
+    mov dx, 0x1f4
+    mov eax, ebx    ; restore the backup LBA
+    shr eax, 8
+    out dx, al
+    ; end
+
+
+    ; send the uppper 16 bits of the LBA
+    mov dx, 0x1f5
+    mov eax, ebx    ; restore the backup LBA
+    shr eax, 16
+    out dx, al
+    ; end
+
+
+    mov dx, 0x1f7
+    mov al, 0x20
+    out dx, al
+
+
+    ; read all sectors into memory
+.next_sector:
+    push ecx
+
+; check if we need to read
+.try_again:
+    mov dx, 0x1f7
+    in al, dx
+    test al, 8
+    jz .try_again
+
+
+; we need to read 256 words at a time
+    mov ecx, 256
+    mov dx, 0x1f0
+    rep insw
+    pop ecx
+    loop .next_sector
+
+    ; end of reading sectors into memory
+    ret
 
 times 510-($ - $$) db 0
 dw 0xAA55
