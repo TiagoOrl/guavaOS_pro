@@ -19,4 +19,5 @@ all: ./bin/boot.bin ./bin/kernel.bin
 	$(ASM) -f elf -g ./src/kernel.asm -o ./build/kernel.asm.o
 
 cl:
-	rm -r ./build/* *.bin
+	rm -r ./build/*
+	rm -rf ./bin/*.bin
