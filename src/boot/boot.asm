@@ -190,6 +190,7 @@ ata_lba_read:
 ; we need to read 256 words at a time
     mov ecx, 256
     mov dx, 0x1f0
+    ; reads a word from the port specified in dx (0x1f0) into memory location in EDI register (0x0100000)
     rep insw
     pop ecx
     loop .next_sector
