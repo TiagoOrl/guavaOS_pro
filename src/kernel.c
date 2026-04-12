@@ -20,6 +20,13 @@ void terminal_putchar(int x, int y, char c, char colour)
 
 void terminal_writechar(char c, char colour)
 {
+    if (c == '\n')
+    {
+        terminal_row += 1;
+        terminal_col = 0;
+        return;
+    }
+
     terminal_putchar(terminal_col, terminal_row, c, colour);
     terminal_col += 1;
     if (terminal_col >= VGA_WIDTH)
@@ -75,6 +82,6 @@ size_t strlen(const char * msg)
 void kernel_main()
 {
     terminal_initialize();
-    const char* msg = "Hello World";
+    const char* msg = "Hello World\n test";
     print_string_video(msg, strlen(msg), 6);
 }
