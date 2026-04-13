@@ -1,6 +1,7 @@
 #include "./idt.h"
 #include "../config.h"
 #include "memory/memory.h"
+#include "kernel.h"
 
 
 struct idt_desc idt_descriptors[GUAVAOS_TOTAL_INTERRUPTS];
@@ -12,7 +13,7 @@ extern void idt_load(struct idtr_desc* ptr);
 
 void idt_zero()
 {
-    print("Divide by zero error\n");
+    print("Divide by zero error\n", 6);
 }
 
 
@@ -31,9 +32,9 @@ void idt_init()
 {
     memset(idt_descriptors, 0, sizeof(idt_descriptors));
     idtr_descriptor.limit = sizeof(idt_descriptors) - 1;
-    idtr_descriptor.base = idt_descriptors;
+    idtr_descriptor.base = (uint32_t)idt_descriptors;
 
-    idt_set(0, idt_zero);
+    idt_set(0, idt_zero);   // set the first interrupt (div by zero)
     // Load the interrupt descriptor table
     idt_load(&idtr_descriptor);
 }

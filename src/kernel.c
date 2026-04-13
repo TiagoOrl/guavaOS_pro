@@ -1,6 +1,7 @@
 #include "./kernel.h"
 #include <stdint.h>
 #include <stddef.h>
+#include "idt/idt.h"
 
 uint16_t * video_mem = 0;
 uint16_t terminal_row = 0;
@@ -55,17 +56,6 @@ void terminal_initialize()
 }
 
 
-
-void print_string_video(const char * msg, unsigned int size, char colour)
-{
-    
-    for (int i = 0; i < size; i++)
-    {
-        terminal_writechar(msg[i], colour);
-    }
-}
-
-
 size_t strlen(const char * msg)
 {
     size_t s = 0;
@@ -78,10 +68,29 @@ size_t strlen(const char * msg)
 }
 
 
+void print(const char * msg, char colour)
+{
+    size_t len = strlen(msg);
+    for (int i = 0; i < len; i++)
+    {
+        terminal_writechar(msg[i], colour);
+    }
+}
+
+
+extern void problem();
+
 
 void kernel_main()
 {
     terminal_initialize();
     const char* msg = "Hello World\n test";
-    print_string_video(msg, strlen(msg), 6);
+    print(msg, 6);
+
+
+    // initialize the interrupt descriptor table
+    idt_init();
+
+    // call asm function
+    problem();
 }
