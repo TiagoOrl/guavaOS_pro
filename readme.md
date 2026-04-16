@@ -31,3 +31,11 @@ cd build-binutils
 ../binutils-x.y.z/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
 make
 make install
+
+
+
+## debug with gdb and qemu
+cd bin
+gdb
+add-symbol-file ../build/kernelfull.o 0x100000
+target remote | qemu-system-x86_64 -hda ./os.bin -gdb stdio -S

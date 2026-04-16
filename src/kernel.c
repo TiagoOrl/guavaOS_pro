@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "idt/idt.h"
+#include "io/io.h"
 
 uint16_t * video_mem = 0;
 uint16_t terminal_row = 0;
@@ -84,13 +85,15 @@ extern void problem();
 void kernel_main()
 {
     terminal_initialize();
-    const char* msg = "Hello World\n test";
+    const char* msg = "Hello World\n test\n\n";
     print(msg, 6);
 
 
-    // initialize the interrupt descriptor table
-    idt_init();
+    // // initialize the interrupt descriptor table
+    // idt_init();
 
-    // call asm function
-    problem();
+    // // call asm function
+    // problem();
+
+    outb(0x60, 0xff);
 }
