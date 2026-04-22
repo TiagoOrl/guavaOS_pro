@@ -90,7 +90,9 @@ void kernel_main()
 
 
     // // initialize the interrupt descriptor table
-    // idt_init();
+    idt_init();
+
+    enable_interrupts();
 
     // // call asm function
     // problem();
