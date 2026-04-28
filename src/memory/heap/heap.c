@@ -67,6 +67,75 @@ static uint32_t heap_align_value_to_upper(uint32_t val)
 }
 
 
+static int heap_get_entry_type(HEAP_BLOCK_TABLE_ENTRY entry)
+{
+    return entry & 0x0f;
+}
+
+
+int heap_get_start_block(struct heap* heap, uint32_t total_blocks)
+{
+    struct heap_table* table = heap->table;
+    int bc = 0;     // current block
+    int bs = -1;    // start block
+
+    for (size_t i = 0;i < table->total; i++)
+    {
+        if (heap_get_entry_type(table->entries[i]) != HEAP_BLOCK_TABLE_ENTRY_FREE)
+        {
+            bc = 0;
+            bs = -1;
+            continue;
+        }
+
+        // if its the first block
+        if (bs = -1)
+        {
+            bs = i;
+        }
+        
+        bc++;
+
+        if (bc == total_blocks)
+        {
+            break;
+        }
+    }
+
+    if (bs == -1)
+        return -ENOMEM;
+
+    return bs;
+}
+
+
+void* heap_block_to_address(struct heap* heap, uint32_t block)
+{
+    return heap->saddr + (block * GUAVAOS_HEAP_BLOCK_SIZE);
+}
+
+
+void heap_mark_blocks_taken(struct heap* heap, int start_block, int total_blocks)
+{
+    int end_block = (start_block + total_blocks - 1);
+    HEAP_BLOCK_TABLE_ENTRY entry = HEAP_BLOCK_TABLE_ENTRY_TAKEN | HEAP_BLOCK_IS_FIRST;
+
+    if (total_blocks > 1)
+    {
+        entry |= HEAP_BLOCK_HAS_NEXT;
+    }
+
+    for (int i = start_block;i <= end_block; i++)
+    {
+        heap->table->entries[i] = entry;
+        entry = HEAP_BLOCK_TABLE_ENTRY_TAKEN;
+
+        if (i != end_block - 1)
+            entry |= HEAP_BLOCK_HAS_NEXT;
+    }
+}
+
+
 void* heap_malloc_blocks(struct heap* heap, uint32_t total_blocks)
 {
     void* address = 0;
@@ -80,7 +149,7 @@ void* heap_malloc_blocks(struct heap* heap, uint32_t total_blocks)
     address = heap_block_to_address(heap, start_block);
 
     // mark the blocks as taken
-    heap_mark_blocks_taken(heap, start_block, total_blocks);;
+    heap_mark_blocks_taken(heap, start_block, total_blocks);
     
 out:
     return address;
