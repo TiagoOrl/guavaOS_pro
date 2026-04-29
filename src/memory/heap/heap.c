@@ -2,7 +2,6 @@
 #include "kernel.h"
 #include "status.h"
 #include "./memory/memory.h"
-#include <stdbool.h>
 
 
 static int heap_validade_table(void* ptr, void* end, struct heap_table* table)
@@ -33,7 +32,7 @@ int heap_create(struct heap* heap, void* ptr, void* end, struct heap_table* tabl
     int res = 0;
 
 
-    if (!heap_validate_alignment(ptr) || !heap_validate_aligment(end))
+    if (!heap_validate_alignment(ptr) || !heap_validate_alignment(end))
     {
         res = -EINVARG;
         goto out;
@@ -89,7 +88,7 @@ int heap_get_start_block(struct heap* heap, uint32_t total_blocks)
         }
 
         // if its the first block
-        if (bs = -1)
+        if (bs == -1)
         {
             bs = i;
         }
@@ -156,6 +155,28 @@ out:
 }
 
 
+void heap_mark_blocks_free(struct heap* heap, int starting_block)
+{
+    struct heap_table* table = heap->table;
+    for(int i = starting_block;i < (int)table->total; i++)
+    {
+        HEAP_BLOCK_TABLE_ENTRY entry = table->entries[i];
+        table->entries[i] = HEAP_BLOCK_TABLE_ENTRY_FREE;
+
+        if (!(entry & HEAP_BLOCK_HAS_NEXT))
+        {
+            break;
+        }
+    }
+}
+
+
+int heap_address_to_block(struct heap* heap, void* address)
+{
+    return ((int)(address - heap->saddr)) / GUAVAOS_HEAP_BLOCK_SIZE;
+}
+
+
 void* heap_malloc(struct heap* heap, size_t size)
 {
     size_t aligned_size = heap_align_value_to_upper(size);
@@ -167,5 +188,5 @@ void* heap_malloc(struct heap* heap, size_t size)
 
 void heap_free(struct heap* heap, void* ptr)
 {
-    return 0;
+    heap_mark_blocks_free(heap, heap_address_to_block(heap, ptr));
 }
