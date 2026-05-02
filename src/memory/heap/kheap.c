@@ -2,6 +2,7 @@
 #include "heap.h"
 #include "./config.h"
 #include "kernel.h"
+#include "memory/memory.h"
 
 
 // 1024*1024 = 1048576 = 1MB
@@ -34,6 +35,18 @@ void kheap_init()
 void* kmalloc(size_t size)
 {
     return heap_malloc(&kernel_heap, size);
+}
+
+
+void* kzalloc(size_t size)
+{
+    void* ptr = kmalloc(size);
+    if (!ptr)
+        return 0;
+
+
+    memset(ptr, 0x00, size);
+    return ptr;
 }
 
 
