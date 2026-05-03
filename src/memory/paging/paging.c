@@ -84,4 +84,5 @@ int paging_set_page_entry(uint32_t* directory, void* virt, uint32_t val)
     uint32_t* table = (uint32_t*)(entry & 0xfffff000); // get the addresss without the flag bits
     
     table[table_index] = val; 
+    return res;
 }
