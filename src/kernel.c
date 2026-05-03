@@ -97,6 +97,9 @@ void kernel_main()
     // initialize the heap
     kheap_init();
 
+    // search and initialize the disks
+    disk_search_and_init();
+
     // // initialize the interrupt descriptor table
     idt_init();
 
@@ -107,8 +110,10 @@ void kernel_main()
     paging_switch(paging_4gb_chunk_get_directory(kernel_chunk));
     enable_paging();
 
-    char buffer[512];
-    disk_read_sector(0, 1, buffer);
+
+    // example: reading a sector from disk with the ata driver
+    // char buffer[512];
+    // disk_read_sector(0, 1, buffer);
 
 
     enable_interrupts();

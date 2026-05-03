@@ -1,6 +1,12 @@
 #include "io/io.h"
+#include "disk.h"
+#include "memory/memory.h"
+#include "config.h"
+#include "status.h"
 
 
+
+struct disk disk;
 
 
 // lba = logical block address to read from; total = total number of block to read; buffer = the buffer to read into
@@ -35,4 +41,32 @@ int disk_read_sector(int lba, int total, void* buffer)
     }
  
     return 0;
+}
+
+
+void disk_search_and_init()
+{
+    memset(&disk, 0, sizeof(disk));
+    disk.type = GUAVAOS_DISK_TYPE_REAL;
+    disk.sector_size = GUAVAOS_SECTOR_SIZE;
+}
+
+
+struct disk* disk_get(int index)
+{
+    if(index != 0)
+        return 0;
+
+    return &disk;
+}
+
+
+int disk_read_block(struct disk* idisk, unsigned int lba, int total, void* buffer)
+{
+    if (idisk != &disk)
+    {
+        return -EIO;
+    }
+
+    return disk_read_sector(lba, total, buffer);
 }
