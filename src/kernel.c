@@ -2,6 +2,12 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "idt/idt.h"
+#include "io/io.h"
+#include "memory/heap/kheap.h"
+#include "memory/paging/paging.h"
+#include "disk/disk.h"
+#include "string/string.h"
+#include "fs/pparser.h"
 
 uint16_t * video_mem = 0;
 uint16_t terminal_row = 0;
@@ -56,17 +62,6 @@ void terminal_initialize()
 }
 
 
-size_t strlen(const char * msg)
-{
-    size_t s = 0;
-    while(msg[s] != 0)
-    {
-        s++;
-    }
-
-    return s;
-}
-
 
 void print(const char * msg, char colour)
 {
@@ -80,17 +75,48 @@ void print(const char * msg, char colour)
 
 extern void problem();
 
+static struct paging_4gb_chunk* kernel_chunk = 0;
+
 
 void kernel_main()
 {
     terminal_initialize();
-    const char* msg = "Hello World\n test";
+    const char* msg = "Hello World\n test\n\n";
     print(msg, 6);
 
 
-    // initialize the interrupt descriptor table
+    // initialize the heap
+    kheap_init();
+
+    // search and initialize the disks
+    disk_search_and_init();
+
+    // // initialize the interrupt descriptor table
     idt_init();
 
-    // call asm function
-    problem();
+    // setup paging
+    kernel_chunk = paging_new_4gb(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+
+    // switch to kernel paging chunk
+    paging_switch(paging_4gb_chunk_get_directory(kernel_chunk));
+    enable_paging();
+
+
+    // example: reading a sector from disk with the ata driver
+    // char buffer[512];
+    // disk_read_sector(0, 1, buffer);
+
+
+    enable_interrupts();
+
+    struct path_root* root = pathparser_parse("0:/bin/shell.exe", NULL);
+
+    if (root)
+    {
+        
+    }
+
+
+    // // call asm function
+    // problem();
 }
