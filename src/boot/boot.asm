@@ -4,11 +4,25 @@ bits 16
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
-_start:
-    jmp short start
-    nop
 
- times 33 db 0
+jmp short start
+nop
+
+; FAT16 header
+OEMIdentifier      db     'GUAVAOS '  ; should have 8 bytes in length
+BytesPerSector     dw     0x200       ; 512 bytes per sector
+SectorsPerCluster  db     0x80
+ReservedSectors    dw     200
+FATCopies          db     0x02
+RootDirEntries     dw     0x40
+NumSectors         dw     0x00  
+MediaType          db     0xF8
+SectorsPerFAT      dw     0x100
+SectorsPerTrack    dw     0x20
+NumberOfHeads      dw     0x40
+HiddenSectors      dd     0x00
+
+
 
 start:
     jmp 0:step2
