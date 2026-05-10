@@ -8,8 +8,12 @@ all: ./bin/boot.bin ./bin/kernel.bin
 	rm -rf ./bin/os.bin
 	dd if=./bin/boot.bin >> ./bin/os.bin
 	dd if=./bin/kernel.bin >> ./bin/os.bin
-#	fill 100 sectors with 512 bytes of zeroes
-	dd if=/dev/zero count=100 bs=512 >> ./bin/os.bin 
+#	fill 16 sectors with 1048576 bytes of zeroes
+	dd if=/dev/zero count=16 bs=1048576 >> ./bin/os.bin 
+	sudo mount -t vfat ./bin/os.bin /mnt/d
+# copy a file to the OS bin
+	sudo cp ./hello.txt /mnt/d
+	sudo umount /mnt/d
 
 ./bin/kernel.bin: $(FILES)
 	i686-elf-ld -g -relocatable $(FILES) -o ./build/kernelfull.o

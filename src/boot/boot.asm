@@ -21,6 +21,17 @@ SectorsPerFAT      dw     0x100
 SectorsPerTrack    dw     0x20
 NumberOfHeads      dw     0x40
 HiddenSectors      dd     0x00
+SectorsBig         dd     0x773594
+
+; Extended BPB (Dos 4.0)
+
+
+DriveNumber        db 0x80
+WinNTBit           db 0x00
+Signature          db 0x29
+VolumeID           dd 0xD105
+VolumeIDString     db 'GUAVA BOOT ' ; must have 11 bytes in length
+SystemIdString     db 'FAT16   '    ; must have 8 bytes in length
 
 
 
