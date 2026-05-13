@@ -14,13 +14,13 @@ struct filesystem  fat16_fs = {
 struct filesystem* fat16_init()
 {
     strcpy(fat16_fs.name, "FAT16");
-    return 0;
+    return &fat16_fs;
 }
 
 
 int fat16_resolve(struct disk* disk)
 {
-    return -EIO;
+    return 0;
 }
 
 

@@ -4,6 +4,7 @@
 #include "status.h"
 #include "memory/heap/kheap.h"
 #include "kernel.h"
+#include "./fat/fat16.h"
 
 struct filesystem* filesystems[GUAVAOS_MAX_FILESYSTEMS];
 struct file_descriptor* file_descriptors[GUAVAOS_MAX_FILE_DESCRIPTORS];
@@ -40,11 +41,13 @@ void fs_insert_filesystem(struct filesystem* filesystem)
     *fs = filesystem;
 }
 
+
 // load static filesystems from kernel
 static void fs_static_load()
 {
-    // fs_insert_filesystem(fat16_init());
+    fs_insert_filesystem(fat16_init());
 }
+
 
 // load all the available filesystems
 void fs_load()

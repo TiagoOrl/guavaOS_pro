@@ -50,5 +50,7 @@ char* strcpy(char* dest, const char* src)
         dest++;
     }
 
+    *dest = 0x00;   // append null terminator
+
     return res;
 }
