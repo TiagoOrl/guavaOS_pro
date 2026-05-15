@@ -1,6 +1,7 @@
 #ifndef H_DISK
 #define H_DISK
-
+ 
+#include "fs/file.h"
 
 typedef unsigned int GUAVAOS_DISK_TYPE;
 
@@ -11,6 +12,13 @@ typedef unsigned int GUAVAOS_DISK_TYPE;
 struct disk {
     GUAVAOS_DISK_TYPE type;
     int sector_size;
+    int id;
+    
+    // filesystem binded to the disk
+    struct filesystem* filesystem;
+
+    // the private data of our filesystem
+    void* fs_private;
 };
 
 
