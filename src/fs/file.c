@@ -114,7 +114,63 @@ struct filesystem* fs_resolve(struct disk* disk)
 } 
 
 
+FILE_MODE file_get_mode_by_string(const char* str)
+{
+    FILE_MODE mode = FILE_MODE_INVALID;
+
+    if (strncmp(str, "r", 1) == 0)
+    {
+        mode = FILE_MODE_READ;
+    }
+
+    else if (strncmp(str, "w", 1) == 0)
+    {
+        mode = FILE_MODE_WRITE;
+    }
+
+    else if (strncmp(str, "a", 1) == 0)
+    {
+        mode = FILE_MODE_APPEND;
+    }
+
+    return mode;
+}
+
 int fopen(const char* filename, const char* mode)
 {
-    return -EIO;
+    int res = 0;
+    struct path_root* root_path = pathparser_parse(filename, NULL);
+
+    if (!root_path)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    // we cannot have just a root path like 0:/
+    if (!root_path->first)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    struct disk* disk = disk_get(root_path->drive_number);
+    if (!disk)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+
+    // if disk doesnt have a filesystem
+    if (!disk->filesystem)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+
+
+out:
+    return res;
 }
