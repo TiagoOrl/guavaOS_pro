@@ -5,6 +5,7 @@
 #include "memory/heap/kheap.h"
 #include "kernel.h"
 #include "./fat/fat16.h"
+#include "string/string.h"
 
 struct filesystem* filesystems[GUAVAOS_MAX_FILESYSTEMS];
 struct file_descriptor* file_descriptors[GUAVAOS_MAX_FILE_DESCRIPTORS];
@@ -136,7 +137,7 @@ FILE_MODE file_get_mode_by_string(const char* str)
     return mode;
 }
 
-int fopen(const char* filename, const char* mode)
+int fopen(const char* filename, const char* mode_str)
 {
     int res = 0;
     struct path_root* root_path = pathparser_parse(filename, NULL);
@@ -169,8 +170,38 @@ int fopen(const char* filename, const char* mode)
         goto out;
     }
 
+    FILE_MODE mode = file_get_mode_by_string(mode_str);
 
+    if (mode == FILE_MODE_INVALID)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    void* descriptor_private_data = disk->filesystem->open(disk, root_path->first, mode);
+
+    if (ISERR(descriptor_private_data))
+    {
+        res = ERROR_I(descriptor_private_data);
+        goto out;
+    }
+
+    struct file_descriptor* desc = 0;
+    res = file_new_descriptor(&desc);
+
+    if (res < 0)
+    {
+        goto out;
+    }
+
+    desc->filesystem = disk->filesystem;
+    desc->private = descriptor_private_data;
+    desc->disk = disk;
+    res = desc->index;
 
 out:
+    if (res < 0)
+        res = 0;
+        
     return res;
 }

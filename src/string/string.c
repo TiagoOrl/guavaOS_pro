@@ -1,5 +1,16 @@
 #include "string.h"
 
+
+char tolower(char s1)
+{
+    if (s1 >= 65 && s1 <= 90)
+    {
+        s1 += 32;
+    }
+
+    return s1;
+}
+
 int strncmp(const char* str1, const char* str2, int n)
 {
     unsigned char u1, u2;
@@ -18,6 +29,27 @@ int strncmp(const char* str1, const char* str2, int n)
         {
             return 0;
         }
+    }
+
+    return 0;
+}
+
+
+int istrcmp(const char* s1, const char* s2, int n)
+{
+    unsigned char u1, u2;
+
+    while(n-- > 0)
+    {
+        u1 = (unsigned char)*s1++;
+        u2 = (unsigned char)*s2++;
+
+        if (u1 != u2 && tolower(u1) != tolower(u2))
+            return u1 - u2;
+
+        if (u1 == '\0')
+            return 0;
+
     }
 
     return 0;
