@@ -109,7 +109,7 @@ struct fat_item
 };
 
 
-struct fat_item_descriptor
+struct fat_file_descriptor
 {
     struct fat_item* item;
     uint32_t pos;

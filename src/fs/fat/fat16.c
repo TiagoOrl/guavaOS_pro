@@ -3,6 +3,7 @@
 #include "string/string.h"
 #include "memory/memory.h"
 #include "memory/heap/kheap.h"
+#include "kernel.h"
 
 
 int fat16_resolve(struct disk* disk);
@@ -183,8 +184,54 @@ out:
     return res;
 }
 
+struct fat_item* fat16_find_item_in_directory(struct disk* disk, struct fat_directory* directory, const char * name)
+{
+    struct fat_item* f_item = 0;
+    char tmp_filename[GUAVAOS_MAX_PATH];
+
+    for (int i = 0; i < directory->total; i++)
+    {
+        fat16_get_full_relative_filename(&directory->item[i], tmp_filename, sizeof(tmp_filename));
+    }
+}
+
+struct fat_item* fat16_get_root_directory_entry(struct disk* disk, struct path_part* path)
+{
+    struct fat_private* fat_private = disk->fs_private;
+    struct fat_item* curren_item = 0;
+    struct fat_item* root_item = fat16_find_item_in_directory(disk, &fat_private->root_directory, path->part);
+
+    if (!root_item)
+    {
+        goto out;
+    }
+
+out:
+    return curren_item;
+}   
+
 
 void* fat16_open(struct disk* disk, struct path_part* path, FILE_MODE mode)
 {
-    return 0;
+    if (mode != FILE_MODE_READ)
+    {
+        return ERROR(-ERDONLY);
+    }
+
+    struct fat_file_descriptor* descriptor = 0;
+    descriptor = kzalloc(sizeof(struct fat_file_descriptor));
+    if (!descriptor)
+    {
+        return ERROR(-ENOMEM);
+    }
+
+    descriptor->item = fat16_get_root_directory_entry(disk, path);
+    if (!descriptor->item)
+    {
+        return ERROR(-EIO);
+    }
+
+    descriptor->pos = 0;
+
+    return descriptor;
 }
