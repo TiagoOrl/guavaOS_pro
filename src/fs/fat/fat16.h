@@ -15,7 +15,7 @@
 
 typedef unsigned int FAT_ITEM_TYPE;
 #define FAT_ITEM_TYPE_DIRECTORY 0
-#define AT_ITEM_TYPE_file 1
+#define FAT_ITEM_TYPE_FILE 1
 
 
 // fat directory entry attributes bitmask
