@@ -48,7 +48,7 @@ struct fat_header
     uint8_t sectors_per_cluster;
     uint16_t reserved_sectors;
     uint8_t fat_copies;
-    uint16_t root_directory_entries;
+    uint16_t root_dir_entries;
     uint16_t number_of_sectors;
     uint8_t media_type;
     uint16_t sectors_per_fat;

@@ -122,6 +122,13 @@ void kernel_main()
     // disk_streamer_read(stream, &c, 1);
 
 
+    int fd = fopen("0:/hello.txt", "r");
+
+    if (fd)
+    {
+        print("we opened hello.txt\n", 2);
+    }
+
     while (1)
     {
 
