@@ -133,6 +133,10 @@ struct fat_private
 
 
 struct filesystem* fat16_init();
+int fat16_resolve(struct disk* disk);
+void* fat16_open(struct disk* disk, struct path_part* path, FILE_MODE mode);
+int fat16_read(struct disk* disk, void* descriptor, uint32_t size, uint32_t nmemb, char* out_ptr);
+int fat16_seek(void* private, uint32_t offset, FILE_SEEK_MODE seek_mode);
 
 
 #endif
