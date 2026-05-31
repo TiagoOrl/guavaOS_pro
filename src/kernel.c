@@ -126,7 +126,11 @@ void kernel_main()
 
     if (fd)
     {
-        print("we opened hello.txt\n", 2);
+        print("we opened hello.txt\n", 3);
+        char buff[17];
+        buff[16] = 0x00;
+        fread(buff, 16, 1, fd);
+        print(buff, 4);
     }
 
     while (1)
