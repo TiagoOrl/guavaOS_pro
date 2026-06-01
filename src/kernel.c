@@ -126,12 +126,17 @@ void kernel_main()
 
     if (fd)
     {
-        print("we opened hello.txt\n", 3);
-        char buff[17];
-        buff[16] = 0x00;
-        fseek(fd, 2, SEEK_SET);
-        fread(buff, 14, 1, fd);
-        print(buff, 4);
+        // print("we opened hello.txt\n", 3);
+        // char buff[17];
+        // buff[16] = 0x00;
+        // fseek(fd, 2, SEEK_SET);
+        // fread(buff, 14, 1, fd);
+        // print(buff, 4);
+
+        struct file_stat s;
+        fstat(fd, &s);
+
+        print("test", 3);
     }
 
     while (1)
