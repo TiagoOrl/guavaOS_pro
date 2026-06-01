@@ -4,7 +4,7 @@
 
 
 
-struct disk_stream* disk_streamer_new(int disk_id)
+struct disk_stream* diskstreamer_new(int disk_id)
 {
     struct disk* disk = disk_get(disk_id);
     if (!disk)
@@ -19,14 +19,14 @@ struct disk_stream* disk_streamer_new(int disk_id)
 }
 
 
-int disk_streamer_seek(struct disk_stream* stream, int pos)
+int diskstreamer_seek(struct disk_stream* stream, int pos)
 {
     stream->pos = pos;
     return 0;
 }
 
 
-int disk_streamer_read(struct disk_stream* stream, void* out, int total)
+int diskstreamer_read(struct disk_stream* stream, void* out, int total)
 {
     int sector = stream->pos / GUAVAOS_SECTOR_SIZE;
     int offset = stream->pos % GUAVAOS_SECTOR_SIZE;
@@ -50,7 +50,7 @@ int disk_streamer_read(struct disk_stream* stream, void* out, int total)
 
     if (total > GUAVAOS_SECTOR_SIZE)
     {
-        res = disk_streamer_read(stream, out, total - GUAVAOS_SECTOR_SIZE);
+        res = diskstreamer_read(stream, out, total - GUAVAOS_SECTOR_SIZE);
     }
 
 out:
@@ -58,7 +58,7 @@ out:
 }
 
 
-void disk_streamer_close(struct disk_stream* stream)
+void diskstreamer_close(struct disk_stream* stream)
 {
     kfree(stream);
 }

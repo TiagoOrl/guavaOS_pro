@@ -5,6 +5,7 @@
 #include "memory/heap/kheap.h"
 #include "kernel.h"
 #include "./fat/fat16.h"
+#include "string/string.h"
 
 struct filesystem* filesystems[GUAVAOS_MAX_FILESYSTEMS];
 struct file_descriptor* file_descriptors[GUAVAOS_MAX_FILE_DESCRIPTORS];
@@ -114,7 +115,156 @@ struct filesystem* fs_resolve(struct disk* disk)
 } 
 
 
-int fopen(const char* filename, const char* mode)
+FILE_MODE file_get_mode_by_string(const char* str)
 {
-    return -EIO;
+    FILE_MODE mode = FILE_MODE_INVALID;
+
+    if (strncmp(str, "r", 1) == 0)
+    {
+        mode = FILE_MODE_READ;
+    }
+
+    else if (strncmp(str, "w", 1) == 0)
+    {
+        mode = FILE_MODE_WRITE;
+    }
+
+    else if (strncmp(str, "a", 1) == 0)
+    {
+        mode = FILE_MODE_APPEND;
+    }
+
+    return mode;
+}
+
+int fopen(const char* filename, const char* mode_str)
+{
+    int res = 0;
+    struct path_root* root_path = pathparser_parse(filename, NULL);
+
+    if (!root_path)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    // we cannot have just a root path like 0:/
+    if (!root_path->first)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    struct disk* disk = disk_get(root_path->drive_number);
+    if (!disk)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+
+    // if disk doesnt have a filesystem
+    if (!disk->filesystem)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+    FILE_MODE mode = file_get_mode_by_string(mode_str);
+
+    if (mode == FILE_MODE_INVALID)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    void* descriptor_private_data = disk->filesystem->open(disk, root_path->first, mode);
+
+    if (ISERR(descriptor_private_data))
+    {
+        res = ERROR_I(descriptor_private_data);
+        goto out;
+    }
+
+    struct file_descriptor* desc = 0;
+    res = file_new_descriptor(&desc);
+
+    if (res < 0)
+    {
+        goto out;
+    }
+
+    desc->filesystem = disk->filesystem;
+    desc->private = descriptor_private_data;
+    desc->disk = disk;
+    res = desc->index;
+
+out:
+    if (res < 0)
+        res = 0;
+        
+    return res;
+}
+
+
+int fstat(int fd, struct file_stat* stat)
+{
+    int res = 0;
+    struct file_descriptor *desc = file_get_descriptor(fd);
+
+    if (!desc)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+    res = desc->filesystem->stat(desc->disk, desc->private, stat);
+
+out:
+    return res;
+}
+
+
+int fseek(int fd, int offset, FILE_SEEK_MODE whence)
+{
+    int res = 0;
+    struct file_descriptor* desc = file_get_descriptor(fd);
+
+    if (!desc)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+    res = desc->filesystem->seek(desc->private, offset, whence);
+        
+
+
+out:
+    return res;
+}
+
+
+int fread(void* ptr, uint32_t size, uint32_t nmemb, int fd)
+{
+    int res = 0;
+
+    if (size == 0 || nmemb == 0 || fd < 1)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    struct file_descriptor* desc = file_get_descriptor(fd);
+    if (!desc)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    res = desc->filesystem->read(desc->disk, desc->private, size, nmemb, (char*) ptr);
+
+out:
+    return res;
+
 }
