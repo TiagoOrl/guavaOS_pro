@@ -28,6 +28,20 @@ struct paging_4gb_chunk* paging_new_4gb(uint8_t flags)
 }
 
 
+void paging_free_4gb(struct paging_4gb_chunk* chunk)
+{
+    for (int i = 0; i < 1024; i++)
+    {
+        uint32_t entry = chunk->directory_entry[i];
+        uint32_t* table = (uint32_t*) (entry & 0xfffff000);
+        kfree(table);
+    }
+
+    kfree(chunk->directory_entry);
+    kfree(chunk);
+}
+
+
 void paging_switch(uint32_t* directory)
 {
     paging_load_directory(directory);
