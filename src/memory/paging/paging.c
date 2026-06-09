@@ -100,3 +100,41 @@ int paging_set_page_entry(uint32_t* directory, void* virt, uint32_t val)
     table[table_index] = val; 
     return res;
 }
+
+
+int paging_map_to(uint32_t* directory, void* virt, void* phys, void* phys_end, int flags)
+{
+    int res = 0;
+
+    if ((uint32_t)virt % PAGING_PAGE_SIZE)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+    
+    if ((uint32_t)phys % PAGING_PAGE_SIZE)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+
+    if ((uint32_t)phys_end % PAGING_PAGE_SIZE)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    if ((uint32_t)phys_end < (uint32_t)phys)
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    uint32_t total_pages = (uint32_t)phys_end - (uint32_t)phys;
+    int total_pages = total_bytes / PAGING_PAGE_SIZE;
+    res = paging_map_range(directory, virt, phys, total_pages, flags);
+
+out:
+    return res;
+}
