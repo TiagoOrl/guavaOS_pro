@@ -79,7 +79,7 @@ out:
 
 
 // sets a page table entry
-int paging_set_page_entry(uint32_t* directory, void* virt, uint32_t val)
+int paging_set(uint32_t* directory, void* virt, uint32_t val)
 {
     if (!paging_is_aligned(virt))
     {
@@ -110,6 +110,18 @@ int paging_map(uint32_t* directory, void* virt, void* phys, int flags)
     }
 
     return paging_set(directory, virt, (uint32_t) phys | flags);
+}
+
+
+void* paging_align_address(void* ptr)
+{
+    if ((uint32_t)ptr % PAGING_PAGE_SIZE)
+    {
+        return (void*)((uint32_t)ptr +  PAGING_PAGE_SIZE - ((uint32_t)ptr % PAGING_PAGE_SIZE));
+    }
+
+
+    return ptr;
 }
 
 
@@ -162,7 +174,7 @@ int paging_map_to(uint32_t* directory, void* virt, void* phys, void* phys_end, i
         goto out;
     }
 
-    uint32_t total_pages = (uint32_t)phys_end - (uint32_t)phys;
+    uint32_t total_bytes = (uint32_t)phys_end - (uint32_t)phys;
     int total_pages = total_bytes / PAGING_PAGE_SIZE;
     res = paging_map_range(directory, virt, phys, total_pages, flags);
 

@@ -7,8 +7,9 @@
 #include "memory/heap/kheap.h"
 #include "kernel.h"
 #include "status.h"
+#include "process.h"
 
-
+struct process;
 struct registers
 {
     uint32_t edi;
@@ -33,11 +34,12 @@ struct task
     struct registers registers;
     struct task* next;
     struct task* prev;
+    struct process* process;
 };
 
 
-int task_init(struct task* task);
-struct task* task_new();
+int task_init(struct task* task, struct process* process);
+struct task* task_new(struct process* process);
 int task_free(struct task* task);
 struct task* task_current();
 struct task* task_get_next();

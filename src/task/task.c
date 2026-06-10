@@ -59,7 +59,7 @@ int task_free(struct task* task)
 }
 
 
-struct task* task_new()
+struct task* task_new(struct process* process)
 {
     int res = 0;
     struct task* task = kzalloc(sizeof(struct task));
@@ -70,7 +70,7 @@ struct task* task_new()
         goto out;
     }
 
-    res = task_init(task);
+    res = task_init(task, process);
 
     if (res != GUAVAOS_ALL_OK)
     {
@@ -100,7 +100,7 @@ out:
 }
 
 
-int task_init(struct task* task)
+int task_init(struct task* task, struct process* process)
 {
     memset(task, 0, sizeof(struct task));
     
@@ -115,6 +115,8 @@ int task_init(struct task* task)
     task->registers.ip = GUAVAOS_PROGRAM_VIRTUAL_ADDRESS;
     task->registers.ss = USER_DATA_SEGMENT;
     task->registers.esp = GUAVAOS_PROGRAM_VIRTUAL_STACK_ADDRESS_START;
+
+    task->process = process;
 
 
 
