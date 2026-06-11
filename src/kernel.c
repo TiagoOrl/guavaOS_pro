@@ -109,6 +109,13 @@ struct gdt_structured gdt_structured[GUAVAOS_TOTAL_GDT_SEGMENTS] = {
 };
 
 
+void kernel_page()
+{
+    kernel_registers();
+    paging_switch(kernel_chunk);
+}
+
+
 void kernel_main()
 {
     terminal_initialize();
