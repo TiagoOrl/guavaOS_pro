@@ -5,11 +5,16 @@
 #include "io/io.h"
 #include "memory/heap/kheap.h"
 #include "memory/paging/paging.h"
+#include "memory/memory.h"
 #include "disk/disk.h"
 #include "string/string.h"
 #include "fs/pparser.h"
 #include "./disk/streamer.h"
 #include "./fs/file.h"
+#include "gdt/gdt.h"
+#include "config.h"
+#include "./task/tss.h"
+
 
 uint16_t * video_mem = 0;
 uint16_t terminal_row = 0;
@@ -80,12 +85,39 @@ extern void problem();
 static struct paging_4gb_chunk* kernel_chunk = 0;
 
 
+void panic(const char* msg)
+{
+    print(msg, 8);
+    while(1)
+    {
+
+    }
+}
+
+struct tss tss;
+struct gdt gdt_real[GUAVAOS_TOTAL_GDT_SEGMENTS];
+struct gdt_structured gdt_structured[GUAVAOS_TOTAL_GDT_SEGMENTS] = {
+    { .base = 0x00, .limit = 0x00, .type =  0x00 },   // NULL segment
+    { .base = 0x00, .limit = 0xFFFFFFFF, .type =  0x9a },   // kernel code segment
+    { .base = 0x00, .limit = 0xFFFFFFFF, .type =  0x92 },    // kernel data segment
+    { .base = 0x00, .limit = 0xFFFFFFFF, .type = 0xf8 },    // user code segment
+    { .base = 0x00, .limit = 0xFFFFFFFF, .type = 0xf2 },     // user data segment
+    { .base = (uint32_t)&tss, .limit = sizeof(tss), .type = 0xe9 }  // TSS segment 
+};
+
+
 void kernel_main()
 {
     terminal_initialize();
     const char* msg = "Hello World\n test\n\n";
     print(msg, 6);
 
+
+    memset(gdt_real, 0x00, sizeof(gdt_real));
+    gdt_structured_to_gdt(gdt_real, gdt_structured, GUAVAOS_TOTAL_GDT_SEGMENTS);
+
+    // load GDT
+    gdt_load(gdt_real, sizeof(gdt_real));
 
     // initialize the heap
     kheap_init();
@@ -96,8 +128,17 @@ void kernel_main()
     // search and initialize the disks
     disk_search_and_init();
 
-    // // initialize the interrupt descriptor table
+    // initialize the interrupt descriptor table
     idt_init();
+
+    // setup TSS
+    memset(&tss, 0x00, sizeof(tss));
+    tss.esp0 = 0x600000;
+    tss.ss0 = KERNEL_DATA_SELECTOR;
+
+
+    // load TSS
+    tss_load(0x28);
 
     // setup paging
     kernel_chunk = paging_new_4gb(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
@@ -126,12 +167,17 @@ void kernel_main()
 
     if (fd)
     {
-        print("we opened hello.txt\n", 3);
-        char buff[17];
-        buff[16] = 0x00;
-        fseek(fd, 2, SEEK_SET);
-        fread(buff, 14, 1, fd);
-        print(buff, 4);
+        // print("we opened hello.txt\n", 3);
+        // char buff[17];
+        // buff[16] = 0x00;
+        // fseek(fd, 2, SEEK_SET);
+        // fread(buff, 14, 1, fd);
+        // print(buff, 4);
+
+        struct file_stat s;
+        fstat(fd, &s);
+        fclose(fd);
+        print("test", 3);
     }
 
     while (1)

@@ -6,6 +6,7 @@
 #define GUAVAOS_MAX_PATH 108
 void kernel_main();
 void print(const char * msg, char colour);
+void panic(const char* msg);
 
 
 #define ERROR(value) (void*) (value)
