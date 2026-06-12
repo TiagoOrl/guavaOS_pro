@@ -128,13 +128,10 @@ void task_save_state(struct task* task, struct interrupt_frame* frame)
 
 void task_current_save_state(struct interrupt_frame* frame)
 {
-    if (task_current == 0)
-    {
+    if (!task_current())
         panic("no current task to save\n");
-    }
 
-    struct task* task = task_current;
-
+    struct task* task = task_current();
     task_save_state(task, frame);
 }
 
