@@ -17,6 +17,7 @@
 #include "./task/task.h"
 #include "./task/process.h"
 #include "./status.h"
+#include "isr80h/isr80h.h"
 
 
 uint16_t * video_mem = 0;
@@ -90,7 +91,7 @@ static struct paging_4gb_chunk* kernel_chunk = 0;
 
 void panic(const char* msg)
 {
-    print(msg, 8);
+    print(msg, 10);
     while(1)
     {
 
@@ -156,6 +157,10 @@ void kernel_main()
     // switch to kernel paging chunk
     paging_switch(kernel_chunk);
     enable_paging();
+
+
+    // register kernel commands
+    isr80h_register_commands();
 
 
     // example: reading a sector from disk with the ata driver

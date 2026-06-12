@@ -69,7 +69,7 @@ void idt_init()
 
 void isr80h_register_command(int id, ISR80H_COMMAND command)
 {
-    if (id <= 0 || id >= GUAVAOS_MAX_ISR80H_COMMANDS)
+    if (id < 0 || id >= GUAVAOS_MAX_ISR80H_COMMANDS)
     {
         panic("command id out of bounds \n");
     }
@@ -87,7 +87,7 @@ void* isr80h_handle_command(int command, struct interrupt_frame* frame)
 {
     void* res = 0;
 
-    if (command <= 0 || command >= GUAVAOS_MAX_ISR80H_COMMANDS)
+    if (command < 0 || command >= GUAVAOS_MAX_ISR80H_COMMANDS)
         return 0;
 
     ISR80H_COMMAND command_func = isr80h_commands[command];
