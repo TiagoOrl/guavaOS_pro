@@ -120,8 +120,6 @@ void kernel_page()
 void kernel_main()
 {
     terminal_initialize();
-    const char* msg = "Hello World\n test\n\n";
-    print(msg, 6);
 
 
     memset(gdt_real, 0x00, sizeof(gdt_real));
