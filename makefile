@@ -1,5 +1,5 @@
 ASM=nasm
-FILES= ./build/kernel.asm.o ./build/kernel.o ./build/gdt/gdt.o ./build/task/task.asm.o ./build/task/tss.asm.o ./build/gdt/gdt.asm.o ./build/memory/paging/paging.asm.o ./build/idt/idt.asm.o ./build/idt/idt.o ./build/isr80h/isr80h.o ./build/isr80h/misc.o ./build/isr80h/io.o ./build/disk/disk.o ./build/memory/paging/paging.o ./build/memory/memory.o ./build/memory/heap/kheap.o ./build/memory/heap/heap.o ./build/io/io.asm.o ./build/fs/pparser.o ./build/string/string.o ./build/disk/streamer.o ./build/fs/file.o ./build/fs/fat/fat16.o ./build/task/task.o ./build/task/process.o ./build/keyboard/keyboard.o
+FILES= ./build/kernel.asm.o ./build/kernel.o ./build/gdt/gdt.o ./build/task/task.asm.o ./build/task/tss.asm.o ./build/gdt/gdt.asm.o ./build/memory/paging/paging.asm.o ./build/idt/idt.asm.o ./build/idt/idt.o ./build/isr80h/isr80h.o ./build/isr80h/misc.o ./build/isr80h/io.o ./build/disk/disk.o ./build/memory/paging/paging.o ./build/memory/memory.o ./build/memory/heap/kheap.o ./build/memory/heap/heap.o ./build/io/io.asm.o ./build/fs/pparser.o ./build/string/string.o ./build/disk/streamer.o ./build/fs/file.o ./build/fs/fat/fat16.o ./build/task/task.o ./build/task/process.o ./build/keyboard/keyboard.o ./build/keyboard/ps2.o
 INCLUDES = -I./src
 FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 
@@ -88,21 +88,23 @@ all: ./bin/boot.bin ./bin/kernel.bin user_programs
 	i686-elf-gcc $(INCLUDES) -I./src/string $(FLAGS) -std=gnu99 -c ./src/string/string.c -o ./build/string/string.o -g
 
 ./build/fs/pparser.o: ./src/fs/pparser.c
-	i686-elf-gcc $(INCLUDES) -I./fs $(FLAGS) -std=gnu99 -c ./src/fs/pparser.c -o ./build/fs/pparser.o -g
+	i686-elf-gcc $(INCLUDES) -I./src/fs $(FLAGS) -std=gnu99 -c ./src/fs/pparser.c -o ./build/fs/pparser.o -g
 
 ./build/fs/file.o: ./src/fs/file.c
-	i686-elf-gcc $(INCLUDES) -I./fs $(FLAGS) -std=gnu99 -c ./src/fs/file.c -o ./build/fs/file.o -g
+	i686-elf-gcc $(INCLUDES) -I./src/fs $(FLAGS) -std=gnu99 -c ./src/fs/file.c -o ./build/fs/file.o -g
 
 ./build/fs/fat/fat16.o: ./src/fs/fat/fat16.c
-	i686-elf-gcc $(INCLUDES) -I./fs/fat $(FLAGS) -std=gnu99 -c ./src/fs/fat/fat16.c -o ./build/fs/fat/fat16.o -g
+	i686-elf-gcc $(INCLUDES) -I./src/fs -I./src/fat $(FLAGS) -std=gnu99 -c ./src/fs/fat/fat16.c -o ./build/fs/fat/fat16.o -g
 
 ./build/gdt/gdt.o: ./src/gdt/gdt.c
-	i686-elf-gcc $(INCLUDES) -I./gdt $(FLAGS) -std=gnu99 -c ./src/gdt/gdt.c -o ./build/gdt/gdt.o -g
+	i686-elf-gcc $(INCLUDES) -I./src/gdt $(FLAGS) -std=gnu99 -c ./src/gdt/gdt.c -o ./build/gdt/gdt.o -g
 
 
 ./build/keyboard/keyboard.o: ./src/keyboard/keyboard.c
-	i686-elf-gcc $(INCLUDES) -I./keyboard $(FLAGS) -std=gnu99 -c ./src/keyboard/keyboard.c -o ./build/keyboard/keyboard.o -g
+	i686-elf-gcc $(INCLUDES) -I./src/keyboard $(FLAGS) -std=gnu99 -c ./src/keyboard/keyboard.c -o ./build/keyboard/keyboard.o -g
 
+./build/keyboard/ps2.o: ./src/keyboard/ps2.c
+	i686-elf-gcc $(INCLUDES) -I./src/keyboard $(FLAGS) -std=gnu99 -c ./src/keyboard/ps2.c -o ./build/keyboard/ps2.o -g
 
 user_programs:
 	cd ./programs/blank && $(MAKE) all
