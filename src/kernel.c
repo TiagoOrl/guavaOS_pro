@@ -14,6 +14,10 @@
 #include "gdt/gdt.h"
 #include "config.h"
 #include "./task/tss.h"
+#include "./task/task.h"
+#include "./task/process.h"
+#include "./status.h"
+#include "isr80h/isr80h.h"
 
 
 uint16_t * video_mem = 0;
@@ -87,7 +91,7 @@ static struct paging_4gb_chunk* kernel_chunk = 0;
 
 void panic(const char* msg)
 {
-    print(msg, 8);
+    print(msg, 10);
     while(1)
     {
 
@@ -106,11 +110,16 @@ struct gdt_structured gdt_structured[GUAVAOS_TOTAL_GDT_SEGMENTS] = {
 };
 
 
+void kernel_page()
+{
+    kernel_registers();
+    paging_switch(kernel_chunk);
+}
+
+
 void kernel_main()
 {
     terminal_initialize();
-    const char* msg = "Hello World\n test\n\n";
-    print(msg, 6);
 
 
     memset(gdt_real, 0x00, sizeof(gdt_real));
@@ -144,8 +153,12 @@ void kernel_main()
     kernel_chunk = paging_new_4gb(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
 
     // switch to kernel paging chunk
-    paging_switch(paging_4gb_chunk_get_directory(kernel_chunk));
+    paging_switch(kernel_chunk);
     enable_paging();
+
+
+    // register kernel commands
+    isr80h_register_commands();
 
 
     // example: reading a sector from disk with the ata driver
@@ -153,7 +166,7 @@ void kernel_main()
     // disk_read_sector(0, 1, buffer);
 
 
-    enable_interrupts(); 
+    // enable_interrupts(); 
 
     // test disk streaming
     // struct disk_stream *stream = disk_streamer_new(0);
@@ -163,27 +176,17 @@ void kernel_main()
     // disk_streamer_read(stream, &c, 1);
 
 
-    int fd = fopen("0:/hello.txt", "r");
+    struct process* process = 0;
+    int res = process_load("0:/blank.bin", &process);
 
-    if (fd)
+    if (res != GUAVAOS_ALL_OK)
     {
-        // print("we opened hello.txt\n", 3);
-        // char buff[17];
-        // buff[16] = 0x00;
-        // fseek(fd, 2, SEEK_SET);
-        // fread(buff, 14, 1, fd);
-        // print(buff, 4);
-
-        struct file_stat s;
-        fstat(fd, &s);
-        fclose(fd);
-        print("test", 3);
+        panic("failed to load blank.bin\n");
     }
 
-    while (1)
-    {
+    task_run_first_ever_task();
 
-    }
+    while (1){}
 
 
     // // call asm function

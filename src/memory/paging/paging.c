@@ -42,10 +42,10 @@ void paging_free_4gb(struct paging_4gb_chunk* chunk)
 }
 
 
-void paging_switch(uint32_t* directory)
+void paging_switch(struct paging_4gb_chunk* directory)
 {
-    paging_load_directory(directory);
-    current_directory = directory;
+    paging_load_directory(directory->directory_entry);
+    current_directory = directory->directory_entry;
 }
 
 
@@ -102,14 +102,14 @@ int paging_set(uint32_t* directory, void* virt, uint32_t val)
 }
 
 
-int paging_map(uint32_t* directory, void* virt, void* phys, int flags)
+int paging_map(struct paging_4gb_chunk* directory, void* virt, void* phys, int flags)
 {
     if ((unsigned int) virt % PAGING_PAGE_SIZE || (unsigned int)phys % PAGING_PAGE_SIZE)
     {
         return -EINVARG;
     }
 
-    return paging_set(directory, virt, (uint32_t) phys | flags);
+    return paging_set(directory->directory_entry, virt, (uint32_t) phys | flags);
 }
 
 
@@ -125,14 +125,14 @@ void* paging_align_address(void* ptr)
 }
 
 
-int paging_map_range(uint32_t* directory, void* virt, void* phys, int count, int flags)
+int paging_map_range(struct paging_4gb_chunk* directory, void* virt, void* phys, int count, int flags)
 {
     int res = 0;
 
     for (int i = 0; i < count; i++)
     {
         res = paging_map(directory, virt, phys, flags);
-        if (res == 0)
+        if (res < 0)
             break;
 
         virt += PAGING_PAGE_SIZE;
@@ -145,7 +145,7 @@ out:
 }
 
 
-int paging_map_to(uint32_t* directory, void* virt, void* phys, void* phys_end, int flags)
+int paging_map_to(struct paging_4gb_chunk* directory, void* virt, void* phys, void* phys_end, int flags)
 {
     int res = 0;
 
@@ -180,4 +180,16 @@ int paging_map_to(uint32_t* directory, void* virt, void* phys, void* phys_end, i
 
 out:
     return res;
+}
+
+// returns physical address of a virtual address with the flags
+uint32_t paging_get(uint32_t* directory, void* virt)
+{
+    uint32_t directory_index = 0;
+    uint32_t table_index = 0;
+    paging_get_indexes(virt, &directory_index, &table_index);
+    uint32_t entry = directory[directory_index];
+    uint32_t* table = (uint32_t*)(entry & 0xfffff000);
+
+    return table[table_index];
 }

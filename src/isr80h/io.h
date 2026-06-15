@@ -1,0 +1,11 @@
+#ifndef H_ISR80H_IO
+#define H_ISR80H_IO
+
+#include "task/task.h"
+
+
+struct interrupt_frame;
+void* isr80h_command1_print(struct interrupt_frame* frame);
+
+
+#endif

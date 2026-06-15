@@ -6,5 +6,12 @@ global _start
 
 _start
 
-label:
-    jmp label
+    push message
+    mov eax, 1  ; command for print
+    int 0x80
+    add esp, 4
+    jmp $
+
+
+section .data
+message: db 'test 123456789', 0

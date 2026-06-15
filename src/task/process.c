@@ -90,7 +90,7 @@ int process_map_binary(struct process* process)
 {
     int res = 0;
     paging_map_to(
-        process->task->page_directory->directory_entry, 
+        process->task->page_directory, 
         (void*)GUAVAOS_PROGRAM_VIRTUAL_ADDRESS, 
         process->ptr, 
         paging_align_address(process->ptr + process->size),
@@ -105,6 +105,21 @@ int process_map_memory(struct process* process)
 {
     int res = 0;
     res = process_map_binary(process);
+
+    if (res < 0)
+    {
+        goto out;
+    }
+
+    paging_map_to(
+        process->task->page_directory, 
+        (void*)GUAVAOS_PROGRAM_VIRTUAL_STACK_ADDRESS_END, 
+        process->stack, 
+        paging_align_address(process->stack + GUAVAOS_USER_PROGRAM_STACK_SIZE),
+        PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL | PAGING_IS_WRITABLE
+    );
+
+out:
     return res;
 }
 
@@ -189,6 +204,7 @@ int process_load_for_slot(const char* filename, struct process** process, int pr
     if (ERROR_I(task) == 0)
     {
         res = ERROR_I(task);
+        goto out;
     }
 
     _process->task = task;
