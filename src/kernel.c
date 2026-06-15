@@ -18,6 +18,7 @@
 #include "./task/process.h"
 #include "./status.h"
 #include "isr80h/isr80h.h"
+#include "keyboard/keyboard.h"
 
 
 uint16_t * video_mem = 0;
@@ -159,6 +160,8 @@ void kernel_main()
 
     // register kernel commands
     isr80h_register_commands();
+
+    keyboard_init();
 
 
     // example: reading a sector from disk with the ata driver
