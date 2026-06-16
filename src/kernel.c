@@ -117,6 +117,11 @@ void kernel_page()
     paging_switch(kernel_chunk);
 }
 
+void pic_timer_callback(struct interrupt_frame * frame)
+{
+    print("Timer activated\n", 15);
+}
+
 
 void kernel_main()
 {
@@ -162,6 +167,8 @@ void kernel_main()
     isr80h_register_commands();
 
     keyboard_init();
+
+    idt_register_interrupt_callback(0x20, pic_timer_callback);
 
 
     // example: reading a sector from disk with the ata driver
