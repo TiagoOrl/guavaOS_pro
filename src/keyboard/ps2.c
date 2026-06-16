@@ -27,7 +27,7 @@ void classic_keyboard_handle_interrupt()
 }
 
 
-uint8_t ps2_sacncode_to_char(uint8_t scancode)
+uint8_t ps2_scancode_to_char(uint8_t scancode)
 {
     size_t sizeof_keyboard_set_one = sizeof(keyboard_scan_set_one) / sizeof(uint8_t);
     if (scancode > sizeof_keyboard_set_one)

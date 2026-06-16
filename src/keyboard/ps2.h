@@ -26,6 +26,7 @@ static uint8_t keyboard_scan_set_one[] = {
 
 int ps2_keyboard_init();
 struct keyboard* ps2_get();
+uint8_t ps2_scancode_to_char(uint8_t scancode);
 
 
 #endif
