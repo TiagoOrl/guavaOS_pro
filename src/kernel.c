@@ -117,7 +117,7 @@ void kernel_page()
     paging_switch(kernel_chunk);
 }
 
-void pic_timer_callback(struct interrupt_frame * frame)
+void pic_timer_callback()
 {
     print("Timer activated\n", 15);
 }
@@ -193,8 +193,6 @@ void kernel_main()
     {
         panic("failed to load blank.bin\n");
     }
-
-    keyboard_push('A');
 
     task_run_first_ever_task();
 
