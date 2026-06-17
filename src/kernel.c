@@ -18,6 +18,7 @@
 #include "./task/process.h"
 #include "./status.h"
 #include "isr80h/isr80h.h"
+#include "keyboard/keyboard.h"
 
 
 uint16_t * video_mem = 0;
@@ -116,6 +117,11 @@ void kernel_page()
     paging_switch(kernel_chunk);
 }
 
+void pic_timer_callback()
+{
+    print("Timer activated\n", 15);
+}
+
 
 void kernel_main()
 {
@@ -160,6 +166,10 @@ void kernel_main()
     // register kernel commands
     isr80h_register_commands();
 
+    keyboard_init();
+
+    // idt_register_interrupt_callback(0x20, pic_timer_callback);
+
 
     // example: reading a sector from disk with the ata driver
     // char buffer[512];
@@ -177,7 +187,7 @@ void kernel_main()
 
 
     struct process* process = 0;
-    int res = process_load("0:/blank.bin", &process);
+    int res = process_load_switch("0:/blank.bin", &process);
 
     if (res != GUAVAOS_ALL_OK)
     {

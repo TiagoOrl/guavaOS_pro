@@ -4,27 +4,38 @@
 #include "kernel.h"
 #include "io/io.h"
 #include "task/task.h"
-
+#include "status.h"
 
 struct idt_desc idt_descriptors[GUAVAOS_TOTAL_INTERRUPTS];
 struct idtr_desc idtr_descriptor;
 
+extern void* interrupt_pointer_table[GUAVAOS_TOTAL_INTERRUPTS];
+
+static INTERRUPT_CALLBACK_FUNCTION interrupt_callbacks[GUAVAOS_TOTAL_INTERRUPTS];
 static ISR80H_COMMAND isr80h_commands[GUAVAOS_MAX_ISR80H_COMMANDS];
 extern void idt_load(struct idtr_desc* ptr);
-extern void int21h();
 extern void no_interrupt();
 extern void isr80h_wrapper();
 
 
-void int21h_handler()
-{
-    print("keyboard pressed\n", 6);
-    outb(0x20, 0x20);
-}
 
 
 void no_interrupt_handler()
 {
+    outb(0x20, 0x20);
+}
+
+
+void interrupt_handler(int interrupt, struct interrupt_frame* frame)
+{
+    kernel_page();
+    if (interrupt_callbacks[interrupt] != 0)
+    {
+        task_current_save_state(frame);
+        interrupt_callbacks[interrupt](frame);
+    }
+
+    task_page();
     outb(0x20, 0x20);
 }
 
@@ -55,15 +66,26 @@ void idt_init()
 
     for (int i  = 0; i < GUAVAOS_TOTAL_INTERRUPTS; i++)
     {
-        idt_set(i, no_interrupt);
+        idt_set(i, interrupt_pointer_table[i]);
     }
 
     idt_set(0, idt_zero);   // set the first interrupt (div by zero)
-    idt_set(0x21, int21h);
     idt_set(0x80, isr80h_wrapper);
 
     // Load the interrupt descriptor table
     idt_load(&idtr_descriptor);
+}
+
+
+int idt_register_interrupt_callback(int interrupt, INTERRUPT_CALLBACK_FUNCTION callback_fn)
+{
+    if (interrupt < 0 || interrupt >= GUAVAOS_TOTAL_INTERRUPTS)
+    {
+        return -EINVARG;
+    }
+
+    interrupt_callbacks[interrupt] = callback_fn;
+    return 0;
 }
 
 
